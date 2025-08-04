@@ -1,0 +1,4 @@
+*.log
+*.backup
+*.tmp
+unattended-upgrades-backup-*/
