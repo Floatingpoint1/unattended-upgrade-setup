@@ -43,8 +43,12 @@ create_backup() {
     log "Erstelle Backup in $BACKUP_DIR"
     mkdir -p "$BACKUP_DIR"
 
-    [[ -f "$CONFIG_FILE" ]] && cp "$CONFIG_FILE" "$BACKUP_DIR/" 2>/dev/null || true
-    [[ -f "$PERIODIC" ]] && cp "$PERIODIC" "$BACKUP_DIR/" 2>/dev/null || true
+    if [[ -f "$CONFIG_FILE" ]]; then
+        cp "$CONFIG_FILE" "$BACKUP_DIR/" 2>/dev/null || true
+    fi
+    if [[ -f "$PERIODIC" ]]; then
+        cp "$PERIODIC" "$BACKUP_DIR/" 2>/dev/null || true
+    fi
 
     success "Backup erstellt"
 }
@@ -86,13 +90,14 @@ configure_main_config() {
     fi
 
     cp "$CONFIG_FILE" "${CONFIG_FILE}.backup"
-    local temp_file=$(mktemp)
+    local temp_file
+    temp_file=$(mktemp)
 
     grep -v "distro_codename.*-security\|distro_codename.*-updates" "$CONFIG_FILE" > "$temp_file" || true
 
     if grep -q "Allowed-Origins" "$temp_file"; then
-        sed -i '/Allowed-Origins {/a \        "${distro_id}:${distro_codename}-security";' "$temp_file"
-        sed -i '/Allowed-Origins {/a \        "${distro_id}:${distro_codename}-updates";' "$temp_file"
+        sed -i "/Allowed-Origins {/a \        \"\${distro_id}:\${distro_codename}-security\";" "$temp_file"
+        sed -i "/Allowed-Origins {/a \        \"\${distro_id}:\${distro_codename}-updates\";" "$temp_file"
     else
         error "Allowed-Origins Sektion nicht gefunden"
         rm -f "$temp_file"
