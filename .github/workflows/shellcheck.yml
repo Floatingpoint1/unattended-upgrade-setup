@@ -10,4 +10,5 @@ jobs:
     - name: Install ShellCheck
       run: sudo apt-get install -y shellcheck
     - name: Lint Bash scripts
-      run: shellcheck src/*.sh
+      run: |
+       find . -name "*.sh" -print0 | xargs -0 shellcheck
