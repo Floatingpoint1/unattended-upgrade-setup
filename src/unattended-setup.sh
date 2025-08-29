@@ -9,19 +9,23 @@ BLUE="\e[34m"
 RESET="\e[0m"
 
 log() {
-    echo -e "${YELLOW}[*] $1${RESET}"
+    # Neutrale Log-Ausgabe
+    printf "%b[*] %s%b\n" "$YELLOW" "$1" "$RESET"
 }
 
 success() {
-    echo -e "${GREEN}[✓] $1${RESET}"
+    # Erfolgsmeldung (ASCII-sicher)
+    printf "%b[+] %s%b\n" "$GREEN" "$1" "$RESET"
 }
 
 error() {
-    echo -e "${RED}[✗] $1${RESET}" >&2
+    # Fehlermeldung (ASCII-sicher)
+    printf "%b[!] %s%b\n" "$RED" "$1" "$RESET" >&2
 }
 
 info() {
-    echo -e "${BLUE}[i] $1${RESET}"
+    # Info-Ausgabe
+    printf "%b[i] %s%b\n" "$BLUE" "$1" "$RESET"
 }
 
 # Pfade
@@ -210,12 +214,15 @@ show_status() {
     echo "Timer Status:"
     systemctl status apt-daily.timer apt-daily-upgrade.timer --no-pager -l | grep -E "(Active|Trigger)"
 
-    echo -e "\nNächste geplante Ausführung:"
+    printf "\nNächste geplante Ausführung:\n"
     systemctl list-timers apt-daily\* --no-pager
 
-    echo -e "\nKonfigurationsdateien:"
-    echo "  $CONFIG_FILE: $(test -f "$CONFIG_FILE" && echo "✓ vorhanden" || echo "✗ fehlt")"
-    echo "  $PERIODIC: $(test -f "$PERIODIC" && echo "✓ vorhanden" || echo "✗ fehlt")"
+    printf "\nKonfigurationsdateien:\n"
+    local cfg_status per_status
+    if [[ -f "$CONFIG_FILE" ]]; then cfg_status="vorhanden"; else cfg_status="FEHLT"; fi
+    if [[ -f "$PERIODIC" ]]; then per_status="vorhanden"; else per_status="FEHLT"; fi
+    printf "  %s: %s\n" "$CONFIG_FILE" "$cfg_status"
+    printf "  %s: %s\n" "$PERIODIC" "$per_status"
 }
 
 # Rollback-Funktion
@@ -270,9 +277,10 @@ main() {
 
     show_status
 
-    success "✅ unattended-upgrades wurde erfolgreich konfiguriert!"
+    success "unattended-upgrades wurde erfolgreich konfiguriert!"
     info "Backup wurde erstellt in: $BACKUP_DIR"
     info "Logs können eingesehen werden mit: journalctl -u apt-daily"
 }
 
 main "$@"
+
